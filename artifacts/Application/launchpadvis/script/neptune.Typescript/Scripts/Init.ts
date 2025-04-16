@@ -58,7 +58,7 @@ namespace Init {
 
     export async function render(themeChange: boolean = false) {
         //@ts-ignore
-        if (poSettings.getData().cockpit.theme) {
+        if (poSettings.getData().cockpit.theme) { // @ts-ignore
             systemTheme = poSettings.getData().cockpit.theme;
             VBox.addStyleClass("launchpadvis-VBox-23");
         } else {
@@ -70,12 +70,17 @@ namespace Init {
             VBox.removeStyleClass("launchpadvis-VBox-24-dark");
 
             VBox.addStyleClass(`launchpadvis-VBox-24-${systemTheme}`);
+
+           headerIconSelectedNode.removeStyleClass('launchpadvis-light-selectedIcon');
+           headerIconSelectedNode.removeStyleClass('launchpadvis-dark-selectedIcon');
+
+           headerIconSelectedNode.addStyleClass(`launchpadvis-${systemTheme}-selectedIcon`);
         }
 
         if (systemTheme === "light") {
-            textColor = "#191919";
+            Init.textColor = "#191919";
         } else {
-            textColor = "#FFFFFF";
+           Init.textColor = "#FFFFFF";
         }
 
         stencil = null;
@@ -331,12 +336,13 @@ namespace Init {
                         appType: "application",
                     },
                     icon: {
-                        xlinkHref: `/public/images/platform/bare/${systemTheme}/app-designer.svg`,
-                        refX: 100,
-                        refY: -10,
-                        width: 80,
-                        height: 80,
+                        xlinkHref: `/public/icons/solid/app-designer.svg`,
+                        refX: 125,
+                        refY: 10,
+                        width: 40,
+                        height: 40,
                         fill: "#FF5733",
+                        class: `launchpadvis-${systemTheme}-icon`,
                     },
                 },
                 markup: [
@@ -404,12 +410,13 @@ namespace Init {
                         artifactID: null,
                     },
                     icon: {
-                        xlinkHref: `/public/images/platform/bare/${systemTheme}/tile.svg`,
-                        refX: 100,
-                        refY: -10,
-                        width: 80,
-                        height: 80,
+                        xlinkHref: `/public/icons/solid/tile.svg`,
+                        refX: 125,
+                        refY: 10,
+                        width: 40,
+                        height: 40,
                         fill: "#FF5733",
+                        class: `launchpadvis-${systemTheme}-icon`,
                     },
                 },
                 markup: [
@@ -472,12 +479,13 @@ namespace Init {
                         artifactID: null,
                     },
                     icon: {
-                        xlinkHref: `/public/images/platform/bare/${systemTheme}/tilegroup.svg`,
-                        refX: 100,
-                        refY: -10,
-                        width: 80,
-                        height: 80,
+                        xlinkHref: `/public/icons/solid/tilegroup.svg`,
+                        refX: 125,
+                        refY: 10,
+                        width: 40,
+                        height: 40,
                         fill: "#FF5733",
+                        class: `launchpadvis-${systemTheme}-icon`,
                     },
                 },
                 markup: [
@@ -540,12 +548,13 @@ namespace Init {
                         artifactID: null,
                     },
                     icon: {
-                        xlinkHref: `/public/images/platform/bare/${systemTheme}/launchpad.svg`,
-                        refX: 100,
-                        refY: -10,
-                        width: 80,
-                        height: 80,
+                        xlinkHref: `/public/icons/solid/launchpad.svg`,
+                        refX: 125,
+                        refY: 10,
+                        width: 40,
+                        height: 40,
                         fill: "#FF5733",
+                        class: `launchpadvis-${systemTheme}-icon`,
                     },
                 },
                 markup: [
@@ -615,11 +624,11 @@ namespace Init {
                         appType: null,
                     },
                     icon: {
-                        xlinkHref: `/public/images/platform/bare/${systemTheme}/information.svg`,
-                        refX: 100,
-                        refY: -10,
-                        width: 80,
-                        height: 80,
+                        xlinkHref: `/public/icons/seti/info.svg`,
+                        refX: 125,
+                        refY: 10,
+                        width: 40,
+                        height: 40,
                         fill: "#FF5733",
                     },
                 },

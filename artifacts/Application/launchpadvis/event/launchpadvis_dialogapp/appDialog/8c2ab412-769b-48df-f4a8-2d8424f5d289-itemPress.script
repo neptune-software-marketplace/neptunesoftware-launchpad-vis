@@ -15,7 +15,7 @@
         node.attr("metadata/artifactID",data.id);
 
         modelSelectedNode.getData().name = name;
-        Functions.setSize(null,null,node);
+        Functions.setSize(node);
         modelSelectedNode.refresh();
         visDialog.close();
     }

@@ -146,7 +146,7 @@
 														{
 															"attribute": "src",
 															"grouping": "Properties",
-															"value": "sap-icon://fa-solid/rocket",
+															"value": "sap-icon://nep/launchpad",
 															"script": "",
 															"translation": []
 														},
@@ -1594,13 +1594,6 @@
 									"response": [],
 									"attributes": [
 										{
-											"attribute": "styleClass",
-											"grouping": "Properties",
-											"value": "launchpadvis-VBox",
-											"script": "",
-											"translation": []
-										},
-										{
 											"attribute": "renderType",
 											"grouping": "Properties",
 											"value": "Bare",
@@ -1748,7 +1741,7 @@
 													"data": [
 														{
 															"fieldNo": "9f96537c-a6fe-4b7e-9247-3fd711435c38",
-															"fieldName": "oPageHeaderIcon1",
+															"fieldName": "headerIconSelectedNode",
 															"fieldParent": "0a521b74-57e1-415b-eb23-9f83cbff0fc2",
 															"fieldType": "sap.f.Avatar",
 															"script": "",
@@ -1767,21 +1760,14 @@
 																{
 																	"attribute": "backgroundColor",
 																	"grouping": "Properties",
-																	"value": "Placeholder",
+																	"value": "Transparent",
 																	"script": "",
 																	"translation": []
 																},
 																{
 																	"attribute": "styleClass",
 																	"grouping": "Properties",
-																	"value": "launchpadvis-headerIcon",
-																	"script": "",
-																	"translation": []
-																},
-																{
-																	"attribute": "styleClassVisibility",
-																	"grouping": "Properties",
-																	"value": "sapUiHideOnPhone",
+																	"value": "launchpadvis-selectedIcon",
 																	"script": "",
 																	"translation": []
 																}
@@ -2936,7 +2922,7 @@
 		}
 	],
 	"componentInterface": [],
-	"ver": "25.02.27.1631",
+	"ver": "25.03.02.2217",
 	"application": "launchpadvis",
 	"title": "",
 	"description": "",

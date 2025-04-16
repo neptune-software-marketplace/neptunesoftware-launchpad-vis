@@ -25,6 +25,14 @@
   height: calc(98% + 4px);
 }
 
+.launchpadvis-light-icon {
+  filter: brightness(0);
+}
+
+.launchpadvis-dark-icon {
+  filter: brightness(0) invert(1);
+}
+
 .launchpadvis-headerIcon {
   background-color: rgba(255, 210, 94, 0.15);
   color: #ff9e33;
@@ -75,11 +83,11 @@
   border: 1px solid #239edd;
 }
 
-.x6-widget-transform > div {
+.x6-widget-transform>div {
   border: 1px solid #239edd;
 }
 
-.x6-widget-transform > div:hover {
+.x6-widget-transform>div:hover {
   background-color: #3dafe4;
 }
 
@@ -97,4 +105,21 @@
 
 .x6-widget-selection-box {
   opacity: 0;
+}
+
+.x6-widget-stencil-title,
+.x6-widget-stencil-group>.x6-widget-stencil-group-title {
+  border-top-left-radius: 8px;
+}
+
+.launchpadvis-selectedIcon .sapFAvatarImageHolder.sapFAvatarImageCover {
+  background-size: 2rem !important;
+}
+
+.launchpadvis-light-selectedIcon {
+  filter: brightness(0);
+}
+
+.launchpadvis-dark-selectedIcon {
+  filter: brightness(0) invert(1);
 }

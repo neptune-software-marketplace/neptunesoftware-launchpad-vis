@@ -76,6 +76,37 @@ namespace Events {
             }
         };
 
+        eventHandlers.cellDown = ({ cell, e }) => {
+            const view = cell.findView(graph);
+            if (!view) return;
+
+            if (!cell.getAttrs().metadata.hasChildren) return;
+
+            const buttonElement = view.findOne("circle.expand-collapse-btn");
+            if (!buttonElement) return;
+
+            const svgPoint = graph.clientToLocal(e.clientX, e.clientY);
+
+            const nodePosition = cell.getPosition();
+
+            const buttonX = cell.attr("btn-circle/cx");
+            const buttonY = cell.attr("btn-circle/cy");
+            const buttonRadius = cell.attr("btn-circle/r");
+
+            const absoluteButtonX = nodePosition.x + buttonX;
+            const absoluteButtonY = nodePosition.y + buttonY;
+
+            const distance = Math.sqrt(
+                Math.pow(svgPoint.x - absoluteButtonX, 2) +
+                    Math.pow(svgPoint.y - absoluteButtonY, 2)
+            );
+
+            if (distance <= buttonRadius) {
+                Transform.toggleNodeExpansion(cell.id);
+                e.stopPropagation();
+            }
+        };
+
         eventHandlers.nodeMouseEnterWithNode = ({ node }) => {
             if (node.store.previous.shape !== "launchpad") {
                 node.addTools({
@@ -143,13 +174,14 @@ namespace Events {
         } else if (mode === "view") {
             graph.on("cell:click", eventHandlers.cellClick);
             graph.on("blank:click", eventHandlers.blankClick);
+            graph.on("cell:mousedown", eventHandlers.cellDown);
 
             const nodes = graph.getNodes();
 
             nodes.forEach((node) => {
                 let cellPorts = node.getPorts();
 
-                cellPorts.forEach((port:any) => {
+                cellPorts.forEach((port: any) => {
                     node.portProp(port.id, "attrs/circle", {
                         stroke: "none",
                         fill: "none",
@@ -171,6 +203,7 @@ namespace Events {
         graph.off("edge:mouseenter", eventHandlers.edgeMouseEnter);
         graph.off("edge:mouseleave", eventHandlers.edgeMouseLeave);
         graph.off("blank:click", eventHandlers.blankClick);
+        graph.off("cell:mousedown", eventHandlers.cellDown);
         eventHandlers = {};
     }
 }

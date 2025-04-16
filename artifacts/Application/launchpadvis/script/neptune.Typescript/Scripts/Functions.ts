@@ -141,8 +141,10 @@ namespace Functions {
                     const appType = payload.children[0].appType;
 
                     if (!payload.name || payload.name === "") {
-                        return Promise.reject(`Error: The name cannot be null or an empty string for shape: ${payload.shape}.`);
-                    }                    
+                        return Promise.reject(
+                            `Error: The name cannot be null or an empty string for shape: ${payload.shape}.`
+                        );
+                    }
 
                     const commonPayload = {
                         name: payload.name,
@@ -174,7 +176,9 @@ namespace Functions {
                     }
 
                     if (!payload.name || payload.name === "") {
-                        return Promise.reject(`Error: The name cannot be null or an empty string for shape: ${payload.shape}.`);
+                        return Promise.reject(
+                            `Error: The name cannot be null or an empty string for shape: ${payload.shape}.`
+                        );
                     }
 
                     const groupPayload = {
@@ -197,7 +201,9 @@ namespace Functions {
                     }
 
                     if (!payload.name || payload.name === "") {
-                        return Promise.reject(`Error: The name cannot be null or an empty string for shape: ${payload.shape}.`);
+                        return Promise.reject(
+                            `Error: The name cannot be null or an empty string for shape: ${payload.shape}.`
+                        );
                     }
 
                     const launchpadPayload = {
@@ -232,10 +238,10 @@ namespace Functions {
                 id: tool,
                 method: method,
                 data: payload,
-                success: function (data:any) {
+                success: function (data: any) {
                     resolve(data);
                 },
-                error: function (er:any) {
+                error: function (er: any) {
                     console.error(er);
                     reject(er);
                 },
@@ -316,7 +322,7 @@ namespace Functions {
 
     export async function refreshMainPage() {
         Table.setBusy(true);
-        const response = await artifactAPI({},"Launchpad","List");
+        const response = await artifactAPI({}, "Launchpad", "List");
 
         if (Array.isArray(response)) {
             modelLaunchpads.setData(response);
@@ -381,136 +387,80 @@ namespace Functions {
     function getTextWidth(text: string) {
         const canvas = document.createElement("canvas");
         const context = canvas.getContext("2d");
-
-        context.font = "16px Arial";
-
+        context.font = '16px "72","72full",Arial,Helvetica,sans-serif';
         const metrics = context.measureText(text);
         return metrics.width;
     }
-    export function setSize(name: string = null, title: string = null, cell: any = null) {
-        let defaultCellSize = {
-            width: 180,
-            height: 75,
-        };
-        let defaultIconSize = 100;
 
-        if (name && cell == null) {
-            if (title && title !== "") {
-                const nameSize = getTextWidth(name);
-                const titleSize = getTextWidth(title);
+    export function getSize(title: string, desc: string) {
+        if (!title) title = "";
+        if (!desc) desc = "";
 
-                const widthForName = (39 * nameSize + 2369) / 28;
-                let widthForTitle = (725 + 13 * titleSize) / 16;
+        const titleWidth = Math.max(getTextWidth(title), getTextWidth(desc));
 
-                const size = Math.max(widthForName, widthForTitle);
+        const calculatedWidthCell = 87.596 + titleWidth * 1.145;
+        const finalWidthCell = Math.max(calculatedWidthCell, 180);
 
-                if (size > defaultCellSize.width) {
-                    defaultCellSize.width = size;
-                    defaultIconSize = size - 78;
-                } else {
-                    defaultIconSize = defaultCellSize.width - 78;
-                }
-                return { cell: defaultCellSize, icon: defaultIconSize };
-            }
+        const iconOffset = 55;
+        const iconPosition = finalWidthCell - iconOffset;
 
-            const nameSize = getTextWidth(name);
+        return { cellSize: { width: finalWidthCell, height: 75 }, iconPosition: iconPosition };
+    }
+    export function setSize(cell: any) {
+        const title = cell.attr("title/text");
+        const desc = cell.attr("text/text");
 
-            const widthForName = (39 * nameSize + 2369) / 28;
+        const { cellSize, iconPosition } = getSize(title, desc);
 
-            if (widthForName > defaultCellSize.width) {
-                defaultCellSize.width = widthForName;
-                defaultIconSize = widthForName - 78;
-            } else {
-                defaultIconSize = defaultCellSize.width - 78;
-            }
-            return { cell: defaultCellSize, icon: defaultIconSize };
-        }
+        cell.setSize(cellSize);
+        cell.attr("icon/refX", iconPosition);
+    }
 
-        if (cell && name == null) {
-            const nodeName = cell.attr("title/text");
-            const nodeTitle = cell.attr("text/text");
-
-            const nameSize = getTextWidth(nodeName);
-            const titleSize = getTextWidth(nodeTitle);
-
-            const widthForName = (39 * nameSize + 2369) / 28;
-            let widthForTitle = (725 + 13 * titleSize) / 16;
-
-            const size = Math.max(widthForName, widthForTitle);
-
-            if (size > defaultCellSize.width) {
-                defaultCellSize.width = size;
-                cell.setSize(defaultCellSize);
-                cell.attr("icon/refX", size - 78);
-            } else {
-                cell.setSize(defaultCellSize);
-                cell.attr("icon/refX", defaultCellSize.width - 78);
-            }
-            return;
+    function changeColorCell(cell: any) {
+        if (cell.isNode()) {
+            cell.attr("title/fill", Init.textColor);
+            cell.attr("text/fill", Init.textColor);
+            cell.attr("icon/class", cell.attr("icon/class").replace(/dark|light/, Init.systemTheme));
+        } else if (cell.isEdge()) {
+            cell.attr("line/stroke", Init.textColor);
         }
     }
 
     async function changeColor() {
-        if (window.location.hash === "#launchpad-vis") {
-            const mode = modelData.getData().mode;
-            switch (mode) {
-                case "view":
-                    await Init.render(true);
-                    const data = modelData.getData().selectedLaunchpad;
-                    const json = await Transform.showUsage(
-                        data.id.toLowerCase(),
-                        data.name,
-                        data.title,
-                        data.description
-                    );
-                    await Transform.renderSymmetricGraph(json);
-                    Events.addGraphEvents();
-                    break;
+        if (window.location.hash !== "#launchpad-vis") return;
 
-                case "create":
-                    let cells = graph.getCells();
-                    await Init.render(true);
-                    cells.forEach((cell: any) => {
-                        if (cell.isNode()) {
-                            cell.attr("title/fill", Init.textColor);
-                            cell.attr("text/fill", Init.textColor);
-                            let icon = cell.attr("icon/xlinkHref");
-                            if (icon.includes("dark")) {
-                                icon = icon.replace("dark", "light");
-                            } else if (icon.includes("light")) {
-                                icon = icon.replace("light", "dark");
-                            }
-                            cell.attr("icon/xlinkHref", icon);
-                        } else if (cell.isEdge()) {
-                            cell.attr("line/stroke", Init.textColor);
-                        }
-                    });
-                    Events.addGraphEvents();
-                    graph.resetCells(cells);
-                    Functions.centerContent();
-                    break;
-                default:
-                    await Init.render();
-                    break;
-            }
-            if (modelData.getData().focusedCell) {
-                let icon = modelSelectedNode.getData().icon;
-                if (icon !== null || icon !== "") {
-                    if (icon.includes("dark")) {
-                        icon = icon.replace("dark", "light");
-                    } else if (icon.includes("light")) {
-                        icon = icon.replace("light", "dark");
-                    }
-                    modelSelectedNode.getData().icon = icon;
-                    modelSelectedNode.refresh();
-                }
-            }
-        } else {
-            return;
+        Init.textColor === "#191919" ? (Init.textColor = "#FFFFFF") : (Init.textColor = "#191919");
+        Init.systemTheme === "dark" ? (Init.systemTheme = "light") : (Init.systemTheme = "dark");
+
+        const cells = graph?.getCells();
+        if (cells && Array.isArray(cells)) {
+            cells.forEach((cell: any) => {
+                changeColorCell(cell);
+            });
+        }
+
+        const stencilGraph = stencil?.getGraph?.("group1");
+        const stencilNodes = stencilGraph?.getCells?.();
+
+        if (stencilNodes) {
+            stencilNodes.forEach((cell: any) => {
+                changeColorCell(cell);
+            });
+        }
+
+        // @ts-ignore
+        if (!poSettings.getData().cockpit.theme) {
+            VBox.removeStyleClass("launchpadvis-VBox-24-light");
+            VBox.removeStyleClass("launchpadvis-VBox-24-dark");
+            VBox.addStyleClass(`launchpadvis-VBox-24-${Init.systemTheme}`);
+
+        headerIconSelectedNode.removeStyleClass('launchpadvis-light-selectedIcon');
+           headerIconSelectedNode.removeStyleClass('launchpadvis-dark-selectedIcon');
+           headerIconSelectedNode.addStyleClass(`launchpadvis-${Init.systemTheme}-selectedIcon`);
         }
     }
 
-    sap.ui.getCore().attachThemeChanged(()=>{
+    sap.ui.getCore().attachThemeChanged(() => {
         changeColor();
-    })
+    });
 }

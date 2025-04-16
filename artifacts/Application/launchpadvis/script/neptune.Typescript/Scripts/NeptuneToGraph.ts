@@ -6,11 +6,14 @@ namespace Transform {
 
         let childrenArray: any;
 
+        // @ts-ignore
         if (typeof _convertFlatToNested === "function") {
+            // @ts-ignore
             childrenArray = _convertFlatToNested(tree, "key", "parent");
         } else {
+            // @ts-ignore
             childrenArray = neptune.Utils.convertFlatToNested(tree, "key", "parent");
-        };
+        }
 
         const preProcessedJSON = {
             id: id,
@@ -197,127 +200,245 @@ namespace Transform {
         return isRecursive(tree, node.parent, objectId);
     }
 
-    export async function renderSymmetricGraph(data: any) {
-        const calculateSizes = (data: any) => {
-            let name = data.name;
-            let title = data.title;
+    const expandedNodes = new Set<string>();
+    let originalData: any = null;
 
-            //@ts-ignore
-            if (data.shape === "dynamic") {
-                name = "URL";
+    export function calculateSizes(data: any): void {
+        let name = data.name;
+        let title = data.title;
+
+        //@ts-ignore
+        if (data.shape === "dynamic") {
+            name = "URL";
+        }
+
+        const { cellSize, iconPosition } = Functions.getSize(name, title);
+
+        data.nodeSize = cellSize;
+        data.iconSize = iconPosition;
+
+        data.hasChildren = data.children && data.children.length > 0;
+
+        if (data.children) {
+            data.children.forEach(calculateSizes);
+        }
+    }
+
+    export function filterData(node: any): any {
+        const filteredNode = { ...node };
+
+        if (node.children && node.children.length > 0) {
+            if (expandedNodes.has(node.id)) {
+                filteredNode.children = node.children.map(filterData);
+            } else {
+                delete filteredNode.children;
             }
-            const sizes = Functions.setSize(name, title);
-            data.nodeSize = sizes.cell;
-            data.iconSize = sizes.icon;
-            if (data.children) {
-                data.children.forEach(calculateSizes);
-            }
-        };
-        calculateSizes(data);
+        }
 
-        await Init.render();
+        return filteredNode;
+    }
 
+    export function toggleNodeExpansion(nodeId: string): void {
+        if (expandedNodes.has(nodeId)) {
+            expandedNodes.delete(nodeId);
+        } else {
+            expandedNodes.add(nodeId);
+        }
+
+        const filteredData = filterData(originalData);
+        renderGraph(filteredData);
+    }
+
+    export function renderGraph(data: any): void {
         const result = Hierarchy.compactBox(data, {
             direction: "TB",
-            getHeight: (d: any) => d.nodeSize.height,
-            getWidth: (d: any) => d.nodeSize.width,
-            getHGap: () => 90,
-            getVGap: () => 60,
+            getHeight: (d) => d.nodeSize.height,
+            getWidth: (d) => d.nodeSize.width,
+            getHGap: () => 20,
+            getVGap: () => 25,
+            getSiblingGap: () => 5,
+            alignment: "compact",
+            justifyContent: "start",
         });
 
         //@ts-ignore
         const model: Model.FromJSONData = { nodes: [], edges: [] };
 
-        const traverse = (data: HierarchyResult) => {
-            if (data) {
-                let nodeShape = data.data.shape;
-                let nodeName = data.data.name;
-                const nodeSize = data.data.nodeSize;
-                const iconSize = data.data.iconSize;
-                let nodeTitle = data.data.name;
-                let nodeText = data.data.title;
-                let appType = null;
-                let icon: string;
+        traverseHierarchy(result, model);
 
-                if (nodeShape === "application") {
-                    appType = "application";
-                    nodeShape = "application";
-                    icon = `/public/images/platform/bare/${Init.systemTheme}/app-designer.svg`;
-                } else if (nodeShape === "adaptive") {
-                    appType = "adaptive";
-                    nodeShape = "application";
-                    icon = `/public/images/platform/bare/${Init.systemTheme}/adaptive-app-designer.svg`;
-                } else if (nodeShape === "webapp") {
-                    appType = "webapp";
-                    nodeShape = "application";
-                    icon = `/public/images/platform/bare/${Init.systemTheme}/app-editor.svg`;
-                } else if (nodeShape === "dynamic") {
-                    nodeTitle = "URL";
-                } else {
-                    icon = null;
-                }
-
-                model.nodes.push({
-                    id: data.data.id, // node id and artifact id
-                    shape: nodeShape,
-                    width: nodeSize.width,
-                    height: nodeSize.height,
-                    x: data.x,
-                    y: data.y,
-                    attrs: {
-                        title: {
-                            text: nodeTitle,
-                        },
-                        text: {
-                            text: nodeText,
-                        },
-                        metadata: {
-                            nodeID: data.data.id,
-                            shape: nodeShape,
-                            name: nodeName,
-                            title: data.data.title || null,
-                            description: data.data.description || null,
-                            artifactID: data.data.id || null,
-                            appType: appType,
-                        },
-                        icon: Object.assign(
-                            {
-                                refX: iconSize,
-                            },
-                            icon ? { xlinkHref: icon } : {}
-                        ),
-                    },
-                    ports: {
-                        groups: cellPorts.groups,
-                        items: cellPorts.items.filter(
-                            (item) => item.group === (nodeShape === "launchpad" ? "out" : "in")
-                        ),
-                    },
-                });
-            }
-            if (data.children) {
-                data.children.forEach((item: HierarchyResult) => {
-                    model.edges.push({
-                        source: { cell: data.data.id, port: "out-port" },
-                        target: { cell: item.id, port: "in-port" },
-                        attrs: {
-                            line: {
-                                stroke: Init.textColor,
-                                strokeWidth: 2,
-                                targetMarker: {
-                                    name: "block",
-                                    width: 12,
-                                    height: 8,
-                                },
-                            },
-                        },
-                    });
-                    traverse(item);
-                });
-            }
-        };
-        traverse(result);
         graph.fromJSON(model);
+    }
+
+    export function traverseHierarchy(data: HierarchyResult, model: any): void {
+        if (data) {
+            let nodeShape = data.data.shape;
+            let nodeName = data.data.name;
+            const nodeSize = data.data.nodeSize;
+            const iconSize = data.data.iconSize;
+            let nodeTitle = data.data.name;
+            let nodeText = data.data.title;
+            let appType = null;
+            let icon: string;
+
+            if (nodeShape === "application") {
+                appType = "application";
+                nodeShape = "application";
+                icon = `/public/icons/solid/app-designer.svg`;
+            } else if (nodeShape === "adaptive") {
+                appType = "adaptive";
+                nodeShape = "application";
+                icon = `/public/icons/solid/adaptive-designer.svg`;
+            } else if (nodeShape === "webapp") {
+                appType = "webapp";
+                nodeShape = "application";
+                icon = `/public/font/neptune/1.25/svg/webapp.svg`;
+            } else if (nodeShape === "dynamic") {
+                nodeTitle = "URL";
+            } else {
+                icon = null;
+            }
+
+            let nodeMarkup = undefined;
+
+            // @ts-ignore
+            if (data.data.hasChildren) {
+                nodeMarkup = [
+                    {
+                        tagName: "rect",
+                        selector: "body",
+                    },
+                    {
+                        tagName: "text",
+                        selector: "title",
+                    },
+                    {
+                        tagName: "text",
+                        selector: "text",
+                    },
+                    {
+                        tagName: "image",
+                        selector: "icon",
+                    },
+                    {
+                        tagName: "circle",
+                        selector: "btn-circle",
+                    },
+                    {
+                        tagName: "text",
+                        selector: "btn-text",
+                    },
+                ];
+            }
+
+            const attrs = {
+                title: {
+                    text: nodeTitle,
+                },
+                text: {
+                    text: nodeText,
+                },
+                metadata: {
+                    nodeID: data.data.id,
+                    shape: nodeShape,
+                    name: nodeName,
+                    title: data.data.title || null,
+                    description: data.data.description || null,
+                    artifactID: data.data.id || null,
+                    appType: appType, // @ts-ignore
+                    hasChildren: data.data.hasChildren,
+                },
+                icon: Object.assign(
+                    {
+                        refX: iconSize,
+                    },
+                    icon ? { xlinkHref: icon } : {}
+                ),
+            };
+
+            // @ts-ignore
+            if (data.data.hasChildren) {
+                const buttonX = nodeSize.width - 10;
+                const buttonY = nodeSize.height - 10;
+
+                attrs["btn-circle"] = {
+                    r: 8,
+                    cx: buttonX,
+                    cy: buttonY,
+                    fill: "#ffffff",
+                    stroke: "#888888",
+                    strokeWidth: 1,
+                    cursor: "pointer",
+                    class: "expand-collapse-btn",
+                };
+
+                attrs["btn-text"] = {
+                    x: buttonX,
+                    y: buttonY + 4,
+                    textAnchor: "middle",
+                    fontSize: 12,
+                    fontWeight: "bold",
+                    fill: "#333333",
+                    text: expandedNodes.has(data.data.id) ? "−" : "+",
+                    cursor: "pointer",
+                    pointerEvents: "none",
+                };
+            }
+
+            model.nodes.push({
+                id: data.data.id,
+                shape: nodeShape,
+                width: nodeSize.width,
+                height: nodeSize.height,
+                x: data.x,
+                y: data.y,
+                markup: nodeMarkup,
+                attrs: attrs,
+                ports: {
+                    groups: cellPorts.groups,
+                    items: cellPorts.items.filter(
+                        (item) => item.group === (nodeShape === "launchpad" ? "out" : "in")
+                    ),
+                },
+            });
+        }
+
+        if (data.children) {
+            data.children.forEach((item: HierarchyResult) => {
+                model.edges.push({
+                    source: { cell: data.data.id, port: "out-port" },
+                    target: { cell: item.id, port: "in-port" },
+                    attrs: {
+                        line: {
+                            stroke: Init.textColor,
+                            strokeWidth: 2,
+                            targetMarker: {
+                                name: "block",
+                                width: 12,
+                                height: 8,
+                            },
+                        },
+                    },
+                });
+                traverseHierarchy(item, model);
+            });
+        }
+    }
+
+    export async function renderSymmetricGraph(data: any) {
+        expandedNodes.clear();
+
+        if (data && data.id) {
+            expandedNodes.add(data.id);
+        }
+
+        calculateSizes(data);
+
+        await Init.render();
+
+        originalData = JSON.parse(JSON.stringify(data));
+
+        const filteredData = filterData(originalData);
+        renderGraph(filteredData);
         Functions.centerContent();
     }
 }

@@ -3,13 +3,15 @@
 	"createdAt": "2024-06-18T07:41:57.000Z",
 	"createdBy": "admin",
 	"git": {
-		"remote": "https://github.com/neptune-software-marketplace/neptunesoftware-dxp-abb-launchpad-vis"
+		"remote": "https://github.com/neptune-software-marketplace/neptunesoftware-dxp-abb-launchpad-vis",
+		"branch": "master"
 	},
 	"name": "neptunesoftware-dxp-abb-launchpad-vis",
 	"description": null,
-	"ver": "24.10.25.1301",
+	"ver": "25.04.16.1452",
 	"enableCICD": true,
 	"internalReadOnly": false,
+	"oeVersion": null,
 	"excludeTemplateFiles": false,
 	"roles": [],
 	"apps": [
@@ -117,5 +119,6 @@
 	"code_snippets": [],
 	"wf_determination": [],
 	"wf_taskaction": [],
-	"theme_ui5": []
+	"theme_ui5": [],
+	"webapp": []
 }

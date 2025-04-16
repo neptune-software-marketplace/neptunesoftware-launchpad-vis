@@ -4,13 +4,13 @@ const appType = SelectAppType.getSelectedKey();
 let icon;
 
 if (appType === "adaptive") {
-    icon = `/public/images/platform/bare/${Init.systemTheme}/adaptive-app-designer.svg`;
+    icon = `/public/icons/solid/adaptive-designer.svg`;
     node.attr("icon/xlinkHref",icon);
 } else if (appType === "webapp") {
-    icon = `/public/images/platform/bare/${Init.systemTheme}/app-editor.svg`;
+    icon = `/public/font/neptune/1.25/svg/webapp.svg`;
     node.attr("icon/xlinkHref",icon);
 } else {
-    icon = `/public/images/platform/bare/${Init.systemTheme}/app-designer.svg`;
+    icon = `/public/icons/solid/app-designer.svg`;
     node.attr("icon/xlinkHref",icon);
 }
 

@@ -1,12 +1,12 @@
 .launchpadvis-VBox-23 {
-    background-image: url('/public/images/background.svg');
+    background-image: url("/public/images/background.svg");
     background-position: center top;
     background-repeat: no-repeat;
     height: calc(98% + 4px);
 }
 
 .launchpadvis-VBox-24-dark {
-    background-image: url('/public/images/connect/neptune-connect-background-dark.svg');
+    background-image: url("/public/images/connect/neptune-connect-background-dark.svg");
     background-position: center top;
     background-repeat: no-repeat;
     background-size: cover;
@@ -16,13 +16,21 @@
 }
 
 .launchpadvis-VBox-24-light {
-    background-image: url('/public/images/connect/neptune-connect-background-light.svg');
+    background-image: url("/public/images/connect/neptune-connect-background-light.svg");
     background-position: center top;
     background-repeat: no-repeat;
     background-size: cover;
     border: 2px solid #cdd2d7;
     border-radius: 10px;
     height: calc(98% + 4px);
+}
+
+.launchpadvis-light-icon {
+    filter: brightness(0);
+}
+
+.launchpadvis-dark-icon {
+    filter: brightness(0) invert(1);
 }
 
 .launchpadvis-headerIcon {
@@ -42,19 +50,19 @@
     display: flex;
     border: 2px solid #cdd2d7;
     border-radius: 10px;
-    height: calc(98%);
+    height: 98%;
 }
 
 #stencil {
     width: 250px;
     position: relative;
-    height: calc(100%);
+    height: 100%;
     border-right: 1px solid #dfe3e8;
 }
 
 #graph-container {
     flex-grow: 1;
-    height: calc(100%) !important;
+    height: 100% !important;
 }
 
 .x6-widget-stencil {
@@ -97,4 +105,21 @@
 
 .x6-widget-selection-box {
     opacity: 0;
+}
+
+.x6-widget-stencil-title,
+.x6-widget-stencil-group>.x6-widget-stencil-group-title {
+    border-top-left-radius: 8px;
+}
+
+.launchpadvis-selectedIcon .sapFAvatarImageHolder.sapFAvatarImageCover {
+    background-size: 2rem !important;
+}
+
+.launchpadvis-light-selectedIcon {
+    filter: brightness(0);
+}
+
+.launchpadvis-dark-selectedIcon {
+    filter: brightness(0) invert(1);
 }
